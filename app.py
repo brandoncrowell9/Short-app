@@ -177,7 +177,7 @@ overview_tab, buy_tab, sell_tab, company_tab = st.tabs([
     "📊 Market Overview",
     "📈 BUY Research",
     "📉 SELL Research",
-    "🏢 Company Analysis"
+    "🏢 Company Drill-Down"
 ])
 
 # ============================================
