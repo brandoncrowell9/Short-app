@@ -290,7 +290,7 @@ st.plotly_chart(
             use_container_width=True
         )
 
-    st.info(
+st.info(
         "BUY and SELL screens use different financial "
         "statement measures. These are preliminary "
         "research signals, not automatic trading advice."
