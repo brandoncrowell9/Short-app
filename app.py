@@ -3,9 +3,87 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-st.set_page_config(page_title="ACCT 3343 Stock Analysis", layout="wide")
-st.title("Stock Analysis | BUY & SELL Screener")
-st.caption("Educational screening tool • Financial statement measures are not investment advice")
+
+st.set_page_config(
+    page_title="FINA3343 Analysis App 1",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Wall Street Research Dashboard theme
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #0B1525;
+        color: #EAF1F8;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #142238;
+        border-right: 1px solid #2B4059;
+    }
+
+    h1, h2, h3 {
+        color: #F2F6FC !important;
+        font-family: Arial, sans-serif;
+    }
+
+    h1 {
+        font-size: 2.4rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -1px;
+    }
+
+    [data-testid="stMetric"] {
+        background-color: #172940;
+        border: 1px solid #2B4059;
+        border-radius: 14px;
+        padding: 20px;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #49D9C4;
+        font-weight: 750;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #A9BCD1;
+    }
+
+    div.stButton > button {
+        background-color: #147D80;
+        color: white;
+        border-radius: 8px;
+    }
+
+    [data-testid="stDataFrame"] {
+        border: 1px solid #2B4059;
+        border-radius: 10px;
+    }
+
+    hr {
+        border-color: #2B4059;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown(
+    "<span style='color:#49D9C4;"
+    "font-weight:700;letter-spacing:2px;'>"
+    "FINANCIAL STATEMENT RESEARCH / FINA 3343"
+    "</span>",
+    unsafe_allow_html=True
+)
+
+st.title("FINA3343 Analysis App 1")
+
+st.caption(
+    "Equity Research Dashboard | "
+    "Profitability • Valuation • Earnings Quality"
+)
+
+st.divider()
 
 @st.cache_data
 def load_data():
