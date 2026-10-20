@@ -285,10 +285,7 @@ st.plotly_chart(
 )
 
 
-st.plotly_chart(
-            summary_fig,
-            use_container_width=True
-        )
+
 
 st.info(
         "BUY and SELL screens use different financial "
