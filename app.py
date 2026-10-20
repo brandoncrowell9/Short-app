@@ -194,39 +194,26 @@ with overview_tab:
         "company universe."
     )
 
-    col1, col2 = st.columns(2)
+    
+col1, col2 = st.columns(2)
 
-    with col1:
-        st.markdown("#### Sector Coverage")
+with col1:
+    st.markdown("#### Sector Coverage")
+    # Sector chart code
 
-        sector_counts = (
-            df["sector"]
-            .value_counts()
-            .reset_index()
-        )
+with col2:
+    st.markdown("#### Screening Results")
+    scatter_df = df.dropna(
+        subset=["GPA", "BM"]
+    ).copy()
 
-        sector_counts.columns = ["Sector", "Companies"]
+    # Other scatterplot code goes here
 
-        sector_fig = px.bar(
-            sector_counts,
-            x="Companies",
-            y="Sector",
-            orientation="h",
-            title="Companies by Sector",
-            color_discrete_sequence=["#49D9C4"]
-        )
+    st.plotly_chart(
+        scatter_fig,
+        use_container_width=True
+    )
 
-        sector_fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0B1525",
-            plot_bgcolor="#0B1525",
-            yaxis={"categoryorder": "total ascending"}
-        )
-
-        st.plotly_chart(
-            sector_fig,
-            use_container_width=True
-        )
 
     with col2:
         st.markdown("#### Screening Results")
