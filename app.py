@@ -231,35 +231,59 @@ with overview_tab:
     with col2:
         st.markdown("#### Screening Results")
 
-        summary_df = pd.DataFrame({
-            "Classification": [
-                "Potential BUY",
-                "Potential SELL"
-            ],
-            "Companies": [
-                len(buy),
-                len(sell)
-            ]
-        })
+ 
+# Scatterplot: Profitability versus Valuation
 
-        summary_fig = px.bar(
-            summary_df,
-            x="Classification",
-            y="Companies",
-            color="Classification",
-            color_discrete_map={
-                "Potential BUY": "#49D9C4",
-                "Potential SELL": "#FF7A7A"
-            },
-            title="Screening Signals"
-        )
+scatter_df = df.dropna(
+    subset=["GPA", "BM"]
+).copy()
 
-        summary_fig.update_layout(
-            template="plotly_dark",
-            paper_bgcolor="#0B1525",
-            plot_bgcolor="#0B1525",
-            showlegend=False
-        )
+# Use positive B/M values for meaningful comparison
+scatter_df = scatter_df[
+    scatter_df["BM"] > 0
+]
+
+# Identify BUY and SELL screening classifications
+scatter_df["Screen"] = scatter_df["ticker"].apply(
+    screen_label
+)
+
+scatter_fig = px.scatter(
+    scatter_df,
+    x="BM",
+    y="GPA",
+    color="Screen",
+    hover_name="ticker",
+    hover_data=["name", "sector"],
+    color_discrete_map={
+        "BUY": "#49D9C4",
+        "SELL": "#FF7A7A",
+        "Both screens": "#F4C95D",
+        "Other": "#72849B"
+    },
+    title="Profitability vs. Valuation",
+    labels={
+        "BM": "Book-to-Market Ratio",
+        "GPA": "Gross Profitability"
+    }
+)
+
+scatter_fig.update_traces(
+    marker=dict(size=8, opacity=0.7)
+)
+
+scatter_fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#0B1525",
+    plot_bgcolor="#0B1525",
+    legend_title_text="Screening Signal"
+)
+
+st.plotly_chart(
+    scatter_fig,
+    use_container_width=True
+)
+
 
         st.plotly_chart(
             summary_fig,
