@@ -195,81 +195,94 @@ with overview_tab:
     )
 
     
-col1, col2 = st.columns(2)
 
-with col1:
-    st.markdown("#### Sector Coverage")
-    # Sector chart code
+    col1, col2 = st.columns(2)
 
-with col2:
-    st.markdown("#### Screening Results")
-    scatter_df = df.dropna(
-        subset=["GPA", "BM"]
-    ).copy()
+    # LEFT CHART: SECTOR COVERAGE
+    with col1:
+        st.markdown("#### Sector Coverage")
 
-    # Other scatterplot code goes here
+        sector_counts = (
+            df["sector"]
+            .value_counts()
+            .reset_index()
+        )
+        sector_counts.columns = ["Sector", "Companies"]
 
-    st.plotly_chart(
-        scatter_fig,
-        use_container_width=True
-    )
+        sector_fig = px.bar(
+            sector_counts,
+            x="Companies",
+            y="Sector",
+            orientation="h",
+            title="Companies by Sector",
+            color_discrete_sequence=["#49D9C4"]
+        )
 
+        sector_fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="#0B1525",
+            plot_bgcolor="#0B1525",
+            yaxis={"categoryorder": "total ascending"}
+        )
 
+        st.plotly_chart(
+            sector_fig,
+            use_container_width=True
+        )
+
+    # RIGHT CHART: SCREENING SCATTERPLOT
     with col2:
         st.markdown("#### Screening Results")
 
- 
-# Scatterplot: Profitability versus Valuation
+        scatter_df = df.dropna(
+            subset=["GPA", "BM"]
+        ).copy()
 
-scatter_df = df.dropna(
-    subset=["GPA", "BM"]
-).copy()
+        scatter_df = scatter_df[
+            scatter_df["BM"] > 0
+        ]
 
-# Use positive B/M values for meaningful comparison
-scatter_df = scatter_df[
-    scatter_df["BM"] > 0
-]
+        scatter_df["Screen"] = (
+            scatter_df["ticker"].apply(screen_label)
+        )
 
-# Identify BUY and SELL screening classifications
-scatter_df["Screen"] = scatter_df["ticker"].apply(
-    screen_label
-)
+        scatter_fig = px.scatter(
+            scatter_df,
+            x="BM",
+            y="GPA",
+            color="Screen",
+            hover_name="ticker",
+            hover_data=["name", "sector"],
+            log_x=True,
+            color_discrete_map={
+                "BUY": "#49D9C4",
+                "SELL": "#FF7A7A",
+                "Both screens": "#F4C95D",
+                "Other": "#72849B"
+            },
+            title="Profitability vs. Valuation",
+            labels={
+                "BM": "Book-to-Market Ratio",
+                "GPA": "Gross Profitability"
+            }
+        )
 
-scatter_fig = px.scatter(
-    scatter_df,
-    x="BM",
-    y="GPA",
-    color="Screen",
-    hover_name="ticker",
-    hover_data=["name", "sector"],
-    color_discrete_map={
-        "BUY": "#49D9C4",
-        "SELL": "#FF7A7A",
-        "Both screens": "#F4C95D",
-        "Other": "#72849B"
-    },
-    title="Profitability vs. Valuation",
-    labels={
-        "BM": "Book-to-Market Ratio",
-        "GPA": "Gross Profitability"
-    }
-)
+        scatter_fig.update_traces(
+            marker=dict(size=8, opacity=0.7)
+        )
 
-scatter_fig.update_traces(
-    marker=dict(size=8, opacity=0.7)
-)
+        scatter_fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="#0B1525",
+            plot_bgcolor="#0B1525",
+            legend_title_text="Screening Signal"
+        )
 
-scatter_fig.update_layout(
-    template="plotly_dark",
-    paper_bgcolor="#0B1525",
-    plot_bgcolor="#0B1525",
-    legend_title_text="Screening Signal"
-)
+        st.plotly_chart(
+            scatter_fig,
+            use_container_width=True
+        )
 
-st.plotly_chart(
-    scatter_fig,
-    use_container_width=True
-)
 
 
 
