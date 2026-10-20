@@ -138,54 +138,428 @@ buy["BUY_score"] = (buy["GPA_rank"] + buy["BM_rank"]) / 2
 buy = buy[(buy["GPA_rank"] >= gpa_pct / 100) & (buy["BM_rank"] >= bm_pct / 100)]
 buy = buy.sort_values("BUY_score", ascending=False)
 
+
+# ============================================
+# FINA3343 ANALYSIS APP 1
+# WALL STREET RESEARCH WORKSPACE
+# ============================================
+
+st.markdown("### MARKET INTELLIGENCE")
+
 c1, c2, c3 = st.columns(3)
-c1.metric("Companies screened", len(df))
-c2.metric("Potential SELL", len(sell))
-c3.metric("Potential BUY", len(buy))
 
-left, right = st.columns(2)
-with left:
-    st.subheader("Potential SELL candidates")
-    st.dataframe(sell[["ticker", "name", "sector", "STA", "Scaled_NOA", "red_flags"]], hide_index=True, use_container_width=True)
-with right:
-    st.subheader("Potential BUY candidates")
-    st.dataframe(buy[["ticker", "name", "sector", "GPA", "BM", "BUY_score"]], hide_index=True, use_container_width=True)
+c1.metric("COMPANIES IN UNIVERSE", f"{len(df):,}")
+c2.metric("EARNINGS QUALITY ALERTS", f"{len(sell):,}")
+c3.metric("VALUE + QUALITY CANDIDATES", f"{len(buy):,}")
 
-st.subheader("Profitability versus valuation")
-plot_df = df.dropna(subset=["GPA", "BM"]).copy()
-plot_df = plot_df[plot_df["BM"] > 0]
-sell_ids, buy_ids = set(sell["ticker"]), set(buy["ticker"])
-def label(t):
-    if t in sell_ids and t in buy_ids:
+st.caption(
+    "Live screening results based on your selected sectors, "
+    "market capitalization, and financial thresholds."
+)
+
+st.divider()
+
+# Identify company status using existing screen results
+sell_ids = set(sell["ticker"])
+buy_ids = set(buy["ticker"])
+
+def screen_label(ticker):
+    if ticker in sell_ids and ticker in buy_ids:
         return "Both screens"
-    if t in sell_ids:
+    if ticker in sell_ids:
         return "SELL"
-    if t in buy_ids:
+    if ticker in buy_ids:
         return "BUY"
     return "Other"
-plot_df["Screen"] = plot_df["ticker"].map(label)
-if not plot_df.empty:
-    fig = px.scatter(plot_df, x="BM", y="GPA", color="Screen", hover_name="ticker", hover_data=["name", "sector"], title="Selected universe: GPA vs B/M")
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.info("No companies have usable GPA and B/M for the chart.")
 
-st.subheader("Company drill-down")
-options = sorted(df["ticker"].tolist())
-choice = st.selectbox("Choose a ticker", options)
-record = df[df["ticker"] == choice].iloc[0]
-st.write(f"**{record['name']}** — {record['sector']}")
-show_cols = [c for c in ["fiscal_date", "market_cap", "total_assets", "net_income", "operating_cash_flow", "gross_profit", "stockholders_equity", "STA", "Scaled_NOA", "GPA", "BM", "red_flags"] if c in df.columns]
-st.dataframe(pd.DataFrame({"Measure": show_cols, "Value": [record[c] for c in show_cols]}), hide_index=True)
-st.write("**Current screen status:**", label(choice))
+# Main research navigation
+overview_tab, buy_tab, sell_tab, company_tab = st.tabs([
+    "📊 Market Overview",
+    "📈 BUY Research",
+    "📉 SELL Research",
+    "🏢 Company Analysis"
+])
 
-st.subheader("Investment conclusions — to complete")
-st.info("After validating your course formulas and financial data, write an evidence-based SELL case and a separate BUY case for the leading candidates. Discuss counterarguments, financial trends, and valuation risks; do not treat screening flags as final advice.")
-with st.expander("Methodology and limitations"):
-    st.markdown("""- **SELL:** STA and scaled NOA are high-tail earnings-quality signals. Each can count as one red flag; companies need both measures available.
-- **BUY:** GPA and positive B/M are independently percentile-ranked among companies with both measures. The BUY score equally weights the two ranks.
-- Percentiles are recalculated after sector and size filtering, so changing the universe can change the rankings.
-- Missing values remain missing. No missing financial data is replaced with zero.
-- **Provisional:** Verify scaled NOA against the course's Chapter 3 formula. B/M uses latest annual book equity and a market capitalization captured at a different date; it is not a point-in-time backtest. Financial statement dates and accounting comparability need further review.
-- Candidates can appear on both lists when quality/value and earnings-quality signals conflict. This requires judgment, not automatic resolution.
-""")
+# ============================================
+# TAB 1: MARKET OVERVIEW
+# ============================================
+
+with overview_tab:
+
+    st.subheader("Equity Screening Overview")
+
+    st.write(
+        "This dashboard evaluates financial statement quality, "
+        "profitability, and valuation across the selected "
+        "company universe."
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("#### Sector Coverage")
+
+        sector_counts = (
+            df["sector"]
+            .value_counts()
+            .reset_index()
+        )
+
+        sector_counts.columns = ["Sector", "Companies"]
+
+        sector_fig = px.bar(
+            sector_counts,
+            x="Companies",
+            y="Sector",
+            orientation="h",
+            title="Companies by Sector",
+            color_discrete_sequence=["#49D9C4"]
+        )
+
+        sector_fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="#0B1525",
+            plot_bgcolor="#0B1525",
+            yaxis={"categoryorder": "total ascending"}
+        )
+
+        st.plotly_chart(
+            sector_fig,
+            use_container_width=True
+        )
+
+    with col2:
+        st.markdown("#### Screening Results")
+
+        summary_df = pd.DataFrame({
+            "Classification": [
+                "Potential BUY",
+                "Potential SELL"
+            ],
+            "Companies": [
+                len(buy),
+                len(sell)
+            ]
+        })
+
+        summary_fig = px.bar(
+            summary_df,
+            x="Classification",
+            y="Companies",
+            color="Classification",
+            color_discrete_map={
+                "Potential BUY": "#49D9C4",
+                "Potential SELL": "#FF7A7A"
+            },
+            title="Screening Signals"
+        )
+
+        summary_fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="#0B1525",
+            plot_bgcolor="#0B1525",
+            showlegend=False
+        )
+
+        st.plotly_chart(
+            summary_fig,
+            use_container_width=True
+        )
+
+    st.info(
+        "BUY and SELL screens use different financial "
+        "statement measures. These are preliminary "
+        "research signals, not automatic trading advice."
+    )
+
+
+# ============================================
+# TAB 2: BUY RESEARCH
+# ============================================
+
+with buy_tab:
+
+    st.subheader("BUY Research | Profitability & Value")
+
+    st.write(
+        "This strategy identifies companies with strong "
+        "gross profitability and relatively high "
+        "book-to-market ratios."
+    )
+
+    st.markdown("#### Current BUY Screening Criteria")
+
+    st.write(
+        f"Minimum GPA percentile: **{gpa_pct}%**"
+    )
+
+    st.write(
+        f"Minimum B/M percentile: **{bm_pct}%**"
+    )
+
+    st.metric("Potential BUY Candidates", len(buy))
+
+    st.markdown("#### Ranked BUY Candidates")
+
+    if buy.empty:
+        st.warning(
+            "No companies meet the current BUY criteria. "
+            "Try adjusting the sidebar filters."
+        )
+    else:
+        st.dataframe(
+            buy[
+                [
+                    "ticker", "name", "sector",
+                    "GPA", "BM", "BUY_score"
+                ]
+            ],
+            hide_index=True,
+            use_container_width=True
+        )
+
+        st.markdown("#### Top BUY Candidates")
+
+        top_buy = buy.head(10).copy()
+
+        buy_fig = px.bar(
+            top_buy,
+            x="ticker",
+            y="BUY_score",
+            color_discrete_sequence=["#49D9C4"],
+            title="Top 10 Combined BUY Scores",
+            hover_data=["name", "GPA", "BM"]
+        )
+
+        buy_fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="#0B1525",
+            plot_bgcolor="#0B1525",
+            yaxis_title="Combined Percentile Score"
+        )
+
+        st.plotly_chart(
+            buy_fig,
+            use_container_width=True
+        )
+
+    st.markdown("#### Financial Interpretation")
+
+    st.write(
+        "Higher GPA indicates stronger gross profit "
+        "generation relative to assets. Higher B/M "
+        "can indicate a lower market valuation relative "
+        "to accounting equity, but can also reflect "
+        "financial distress or weaker growth expectations."
+    )
+
+
+# ============================================
+# TAB 3: SELL RESEARCH
+# ============================================
+
+with sell_tab:
+
+    st.subheader("SELL Research | Earnings Quality")
+
+    st.write(
+        "This strategy identifies companies exhibiting "
+        "potential accounting-quality warning signals."
+    )
+
+    st.markdown("#### Current SELL Screening Criteria")
+
+    st.write(
+        f"STA threshold: **{sta_pct}th percentile**"
+    )
+
+    st.write(
+        f"NOA threshold: **{noa_pct}th percentile**"
+    )
+
+    st.write(
+        f"Minimum red flags: **{flags_needed}**"
+    )
+
+    st.metric("Potential SELL Candidates", len(sell))
+
+    st.markdown("#### Ranked SELL Candidates")
+
+    if sell.empty:
+        st.warning(
+            "No companies meet the current SELL criteria. "
+            "Try adjusting the sidebar filters."
+        )
+    else:
+        st.dataframe(
+            sell[
+                [
+                    "ticker", "name", "sector",
+                    "STA", "Scaled_NOA", "red_flags"
+                ]
+            ],
+            hide_index=True,
+            use_container_width=True
+        )
+
+        st.markdown("#### Earnings Quality Comparison")
+
+        sell_plot = sell.head(15).copy()
+
+        sell_fig = px.scatter(
+            sell_plot,
+            x="STA",
+            y="Scaled_NOA",
+            size="red_flags",
+            hover_name="ticker",
+            hover_data=["name", "sector"],
+            color_discrete_sequence=["#FF7A7A"],
+            title="STA vs Scaled NOA"
+        )
+
+        sell_fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="#0B1525",
+            plot_bgcolor="#0B1525"
+        )
+
+        st.plotly_chart(
+            sell_fig,
+            use_container_width=True
+        )
+
+    st.markdown("#### Financial Interpretation")
+
+    st.write(
+        "High scaled total accruals may indicate "
+        "that accounting earnings are less strongly "
+        "supported by operating cash flow. Elevated "
+        "scaled net operating assets can provide an "
+        "additional earnings-quality warning signal."
+    )
+
+
+# ============================================
+# TAB 4: COMPANY ANALYSIS
+# ============================================
+
+with company_tab:
+
+    st.subheader("Company Research Profile")
+
+    options = sorted(df["ticker"].tolist())
+
+    choice = st.selectbox(
+        "Select a company to analyze",
+        options
+    )
+
+    record = df[df["ticker"] == choice].iloc[0]
+
+    st.markdown(f"### {record['name']} ({choice})")
+    st.caption(f"Sector: {record['sector']}")
+
+    st.markdown("#### Financial Ratios")
+
+    ratio_cols = st.columns(4)
+
+    for column, measure in zip(
+        ratio_cols,
+        ["STA", "Scaled_NOA", "GPA", "BM"]
+    ):
+        value = record[measure]
+
+        column.metric(
+            measure,
+            f"{value:.4f}" if pd.notna(value) else "N/A"
+        )
+
+    st.markdown("#### Company Financial Data")
+
+    show_cols = [
+        c for c in [
+            "fiscal_date",
+            "market_cap",
+            "total_assets",
+            "net_income",
+            "operating_cash_flow",
+            "gross_profit",
+            "stockholders_equity",
+            "STA",
+            "Scaled_NOA",
+            "GPA",
+            "BM",
+            "red_flags"
+        ]
+        if c in df.columns
+    ]
+
+    st.dataframe(
+        pd.DataFrame({
+            "Measure": show_cols,
+            "Value": [record[c] for c in show_cols]
+        }),
+        hide_index=True,
+        use_container_width=True
+    )
+
+    status = screen_label(choice)
+
+    st.markdown("#### Current Screening Classification")
+    st.write(f"**{status}**")
+
+    if status == "BUY":
+        st.success(
+            "This company meets the current profitability "
+            "and valuation screening thresholds."
+        )
+    elif status == "SELL":
+        st.error(
+            "This company meets the current "
+            "earnings-quality warning thresholds."
+        )
+    elif status == "Both screens":
+        st.warning(
+            "This company meets both BUY and SELL "
+            "criteria. Its conflicting signals require "
+            "additional investigation."
+        )
+    else:
+        st.info(
+            "This company does not currently qualify "
+            "for either screen."
+        )
+
+    st.markdown("#### Research Methodology")
+
+    with st.expander("Financial ratios and limitations"):
+
+        st.markdown("""
+**BUY methodology**
+
+- Gross Profitability (GPA): Gross Profit / Total Assets.
+- Book-to-Market (B/M): Book Equity / Market Capitalization.
+- BUY scores equally weight GPA and B/M percentile ranks.
+
+**SELL methodology**
+
+- Scaled Total Accruals (STA): (Net Income - Operating Cash Flow) / Total Assets.
+- Scaled NOA: Net Operating Assets / Total Assets.
+- High STA and NOA can signal potential earnings-quality concerns.
+
+**Important limitations**
+
+- The NOA formula still needs to be verified against course materials.
+- Book equity and market capitalization may come from different dates.
+- Foreign-listed companies may require currency reconciliation.
+- Percentiles are recalculated after filtering the universe.
+- Missing values are not replaced with zero.
+- Screening signals are not final investment recommendations.
+        """)
+
+st.divider()
+
+st.caption(
+    "FINA3343 Analysis App 1 | "
+    "Educational Financial Statement Research Dashboard"
+)
