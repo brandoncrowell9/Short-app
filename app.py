@@ -307,6 +307,15 @@ with buy_tab:
         "gross profitability and relatively high "
         "book-to-market ratios."
     )
+    st.markdown("#### Financial Interpretation")
+
+    st.write(
+        "Higher GPA indicates stronger gross profit "
+        "generation compared to its assets. Higher B/M "
+        "can indicate a lower market valuation relative "
+        "to accounting equity, but can also show underlying "
+        "financial distress or weaker growth expectations."
+    )
 
     st.markdown("#### Current BUY Screening Criteria")
 
@@ -363,16 +372,6 @@ with buy_tab:
             buy_fig,
             use_container_width=True
         )
-
-    st.markdown("#### Financial Interpretation")
-
-    st.write(
-        "Higher GPA indicates stronger gross profit "
-        "generation compared to its assets. Higher B/M "
-        "can indicate a lower market valuation relative "
-        "to accounting equity, but can also show underlying "
-        "financial distress or weaker growth expectations."
-    )
 
 
 # ============================================
