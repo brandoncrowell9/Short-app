@@ -368,9 +368,9 @@ with buy_tab:
 
     st.write(
         "Higher GPA indicates stronger gross profit "
-        "generation relative to assets. Higher B/M "
+        "generation compared to its assets. Higher B/M "
         "can indicate a lower market valuation relative "
-        "to accounting equity, but can also reflect "
+        "to accounting equity, but can also show underlying "
         "financial distress or weaker growth expectations."
     )
 
