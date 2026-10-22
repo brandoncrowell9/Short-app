@@ -566,14 +566,6 @@ with company_tab:
 - Scaled NOA: Net Operating Assets / Total Assets.
 - High STA and NOA can signal potential earnings-quality concerns.
 
-**Important limitations**
-
-- The NOA formula still needs to be verified against course materials.
-- Book equity and market capitalization may come from different dates.
-- Foreign-listed companies may require currency reconciliation.
-- Percentiles are recalculated after filtering the universe.
-- Missing values are not replaced with zero.
-- Screening signals are not final investment recommendations.
         """)
 
 st.divider()
