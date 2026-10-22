@@ -387,6 +387,16 @@ with sell_tab:
         "potential accounting-quality warning signals."
     )
 
+    st.markdown("#### Financial Interpretation")
+
+    st.write(
+        "High scaled total accruals may indicate "
+        "that accounting earnings are less strongly "
+        "supported by operating cash flow. Elevated "
+        "scaled net operating assets can provide an "
+        "additional earnings-quality warning signal."
+    )
+
     st.markdown("#### Current SELL Screening Criteria")
 
     st.write(
@@ -447,17 +457,6 @@ with sell_tab:
             sell_fig,
             use_container_width=True
         )
-
-    st.markdown("#### Financial Interpretation")
-
-    st.write(
-        "High scaled total accruals may indicate "
-        "that accounting earnings are less strongly "
-        "supported by operating cash flow. Elevated "
-        "scaled net operating assets can provide an "
-        "additional earnings-quality warning signal."
-    )
-
 
 # ============================================
 # TAB 4: COMPANY ANALYSIS
