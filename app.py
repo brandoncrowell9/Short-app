@@ -390,11 +390,11 @@ with sell_tab:
     st.markdown("#### Financial Interpretation")
 
     st.write(
-        "High scaled total accruals may indicate "
+        "High scaled total accruals can indicate "
         "that accounting earnings are less strongly "
-        "supported by operating cash flow. Elevated "
-        "scaled net operating assets can provide an "
-        "additional earnings-quality warning signal."
+        "supported by operating cash flow. A high "
+        "scaled net operating assets provides another "
+        "earnings-quality red flag."
     )
 
     st.markdown("#### Current SELL Screening Criteria")
