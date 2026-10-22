@@ -289,8 +289,8 @@ with overview_tab:
 
 st.info(
         "BUY and SELL screens use different financial "
-        "statement measures. These are preliminary "
-        "research signals, not automatic trading advice."
+        "statement Information. These are financial health "
+        "signals, but do not mean the stock is an automatic buy or sell."
     )
 
 
