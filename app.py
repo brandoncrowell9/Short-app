@@ -551,7 +551,7 @@ with company_tab:
 
     st.markdown("#### Research Methodology")
 
-    with st.expander("Financial ratios and limitations"):
+    with st.expander("Financial ratios"):
 
         st.markdown("""
 **BUY methodology**
